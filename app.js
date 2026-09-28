@@ -197,45 +197,54 @@ const barObs = new IntersectionObserver(entries => {
 bars.forEach(b => barObs.observe(b));
 
 // ── CONTACT FORM ──────────────────────────────────────────────
-async function handleForm(e) {
-  e.preventDefault();
+document.addEventListener('DOMContentLoaded', () => {
+  const contactForm = document.getElementById('contactForm');
 
-  const form = e.target;
-  const btn = document.getElementById('submitBtn');
-  const ok = document.getElementById('formOk');
-  const span = btn.querySelector('span');
-  const originalText = span ? span.textContent : 'Envoyer';
-
-  if (span) span.textContent = 'Envoi…';
-  btn.disabled = true;
-
-  try {
-    const response = await fetch(form.action, {
-      method: 'POST',
-      body: new FormData(form),
-      headers: {
-        'Accept': 'application/json'
-      }
-    });
-
-    if (response.ok) {
-      if (span) span.textContent = 'Envoyé ✓';
-      if (ok) ok.classList.add('show');
-
-      setTimeout(() => {
-        if (span) span.textContent = originalText;
-        btn.disabled = false;
-        if (ok) ok.classList.remove('show');
-        form.reset();
-      }, 3500);
-    } else {
-      alert("Une erreur est survenue lors de l'envoi.");
-      if (span) span.textContent = originalText;
-      btn.disabled = false;
-    }
-  } catch (error) {
-    alert("Impossible de joindre le serveur.");
-    if (span) span.textContent = originalText;
-    btn.disabled = false;
+  if (!contactForm) {
+    console.error("Formulaire #contactForm introuvable !");
+    return;
   }
-}
+
+  contactForm.addEventListener('submit', async function (e) {
+    e.preventDefault(); // Bloque la redirection
+
+    const form = e.target;
+    const btn = document.getElementById('submitBtn');
+    const ok = document.getElementById('formOk');
+    const span = btn ? btn.querySelector('span') : null;
+    const originalText = span ? span.textContent : 'Envoyer';
+
+    if (span) span.textContent = 'Envoi…';
+    if (btn) btn.disabled = true;
+
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        if (span) span.textContent = 'Envoyé ✓';
+        if (ok) ok.classList.add('show');
+
+        setTimeout(() => {
+          if (span) span.textContent = originalText;
+          if (btn) btn.disabled = false;
+          if (ok) ok.classList.remove('show');
+          form.reset();
+        }, 3500);
+      } else {
+        alert("Erreur lors de l'envoi.");
+        if (span) span.textContent = originalText;
+        if (btn) btn.disabled = false;
+      }
+    } catch (err) {
+      alert("Erreur de connexion.");
+      if (span) span.textContent = originalText;
+      if (btn) btn.disabled = false;
+    }
+  });
+});
