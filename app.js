@@ -12,7 +12,7 @@
 const themeToggle = document.getElementById('themeToggle');
 
 themeToggle.addEventListener('click', () => {
-  const html   = document.documentElement;
+  const html = document.documentElement;
   const isDark = html.getAttribute('data-theme') === 'dark';
 
   // Active la transition globale douce uniquement pendant le switch
@@ -40,7 +40,7 @@ window.addEventListener('scroll', () => {
 
 // ── HAMBURGER ─────────────────────────────────────────────────
 const hamburger = document.getElementById('hamburger');
-const navLinks  = document.getElementById('navLinks');
+const navLinks = document.getElementById('navLinks');
 
 hamburger.addEventListener('click', () => {
   hamburger.classList.toggle('active');
@@ -197,22 +197,45 @@ const barObs = new IntersectionObserver(entries => {
 bars.forEach(b => barObs.observe(b));
 
 // ── CONTACT FORM ──────────────────────────────────────────────
-function handleForm(e) {
+async function handleForm(e) {
   e.preventDefault();
-  const btn = document.getElementById('submitBtn');
-  const ok  = document.getElementById('formOk');
 
-  btn.querySelector('span').textContent = 'Envoi…';
+  const form = e.target;
+  const btn = document.getElementById('submitBtn');
+  const ok = document.getElementById('formOk');
+  const span = btn.querySelector('span');
+  const originalText = span ? span.textContent : 'Envoyer';
+
+  if (span) span.textContent = 'Envoi…';
   btn.disabled = true;
 
-  setTimeout(() => {
-    btn.querySelector('span').textContent = 'Envoyé ✓';
-    ok.classList.add('show');
-    setTimeout(() => {
-      btn.querySelector('span').textContent = 'Envoyer';
+  try {
+    const response = await fetch(form.action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    if (response.ok) {
+      if (span) span.textContent = 'Envoyé ✓';
+      if (ok) ok.classList.add('show');
+
+      setTimeout(() => {
+        if (span) span.textContent = originalText;
+        btn.disabled = false;
+        if (ok) ok.classList.remove('show');
+        form.reset();
+      }, 3500);
+    } else {
+      alert("Une erreur est survenue lors de l'envoi.");
+      if (span) span.textContent = originalText;
       btn.disabled = false;
-      ok.classList.remove('show');
-      e.target.reset();
-    }, 3500);
-  }, 1200);
+    }
+  } catch (error) {
+    alert("Impossible de joindre le serveur.");
+    if (span) span.textContent = originalText;
+    btn.disabled = false;
+  }
 }
